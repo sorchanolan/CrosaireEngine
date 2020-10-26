@@ -1,14 +1,21 @@
-class Variable():
+def get_direction(direction):
+    if direction == 'A':
+        return Variable.ACROSS
+    elif direction == 'D':
+        return Variable.DOWN
 
+
+class Variable:
     ACROSS = "across"
     DOWN = "down"
 
-    def __init__(self, i, j, direction, length):
-        """Create a new variable with starting point, direction, and length."""
+    """Create a new variable with starting point, direction, and length."""
+    def __init__(self, number, direction, length, i, j):
+        self.number = number
+        self.direction = get_direction(direction)
+        self.length = length
         self.i = i
         self.j = j
-        self.direction = direction
-        self.length = length
         self.cells = []
         for k in range(self.length):
             self.cells.append(
@@ -17,27 +24,28 @@ class Variable():
             )
 
     def __hash__(self):
-        return hash((self.i, self.j, self.direction, self.length))
+        return hash((self.number, self.direction, self.length, self.i, self.j))
 
     def __eq__(self, other):
         return (
-            (self.i == other.i) and
-            (self.j == other.j) and
-            (self.direction == other.direction) and
-            (self.length == other.length)
+                (self.number == other.number) and
+                (self.direction == other.direction) and
+                (self.length == other.length) and
+                (self.i == other.i) and
+                (self.j == other.j)
         )
 
     def __str__(self):
-        return f"({self.i}, {self.j}) {self.direction} : {self.length}"
+        return f"({self.i}, {self.j}) {self.number} {self.direction} : {self.length}"
 
     def __repr__(self):
         direction = repr(self.direction)
-        return f"Variable({self.i}, {self.j}, {direction}, {self.length})"
+        return f"Variable({self.i}, {self.j}, {self.number}, {direction}, {self.length})"
 
 
 class Crossword:
 
-    def __init__(self, structure_file, words_file):
+    def __init__(self, structure_file, clues_file):
 
         # Determine structure of crossword
         with open(structure_file) as f:
@@ -57,52 +65,17 @@ class Crossword:
                         row.append(False)
                 self.structure.append(row)
 
-        # Save vocabulary list
-        with open(words_file) as f:
-            self.words = set(f.read().upper().splitlines())
-
-        # Determine variable set
         self.variables = set()
-        for i in range(self.height):
-            for j in range(self.width):
-
-                # Vertical words
-                starts_word = (
-                    self.structure[i][j]
-                    and (i == 0 or not self.structure[i - 1][j])
-                )
-                if starts_word:
-                    length = 1
-                    for k in range(i + 1, self.height):
-                        if self.structure[k][j]:
-                            length += 1
-                        else:
-                            break
-                    if length > 1:
-                        self.variables.add(Variable(
-                            i=i, j=j,
-                            direction=Variable.DOWN,
-                            length=length
-                        ))
-
-                # Horizontal words
-                starts_word = (
-                    self.structure[i][j]
-                    and (j == 0 or not self.structure[i][j - 1])
-                )
-                if starts_word:
-                    length = 1
-                    for k in range(j + 1, self.width):
-                        if self.structure[i][k]:
-                            length += 1
-                        else:
-                            break
-                    if length > 1:
-                        self.variables.add(Variable(
-                            i=i, j=j,
-                            direction=Variable.ACROSS,
-                            length=length
-                        ))
+        with open(clues_file) as f:
+            contents = f.read().splitlines()
+            for line in contents:
+                values = line.split(',')
+                self.variables.add(Variable(
+                    number=int(values[0]),
+                    direction=values[1],
+                    length=int(values[2]),
+                    i=int(values[3]),
+                    j=int(values[4])))
 
         # Compute overlaps for each word
         # For any pair of variables v1, v2, their overlap is either:

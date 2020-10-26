@@ -176,21 +176,13 @@ def main():
 
     # Parse command-line arguments
     structure = 'saturday_grid_structure.txt'
-    words = sys.argv[2]
-    output = sys.argv[3] if len(sys.argv) == 4 else None
+    clues = 'saturday_clues_structure.txt'
 
     # Generate crossword
-    crossword = Crossword(structure, words)
-    creator = CrosswordCreator(crossword)
-    assignment = creator.solve()
-
-    # Print result
-    if assignment is None:
-        print("No solution.")
-    else:
-        creator.print(assignment)
-        if output:
-            creator.save(assignment, output)
+    crossword = Crossword(structure, clues)
+    x = 0
+    # creator = CrosswordCreator(crossword)
+    # assignment = creator.solve()
 
 
 if __name__ == "__main__":
